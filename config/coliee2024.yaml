@@ -1,0 +1,11 @@
+
+mode: 'val' # train, test, val
+corpus_dir: /data/tfink/coliee/2024/data/task1_train_files_2024/
+output_dir: /data/tfink/coliee/2024/data/task1_finetune_dpr/
+pickle_dir: /data/tfink/coliee/2024/data/task1_pickle_files/
+
+label_file_train_original: /data/tfink/coliee/2024/data/task1_train_labels_2024.json
+label_train_val_split: 200
+label_file_train: /data/tfink/coliee/2024/data/task1_finetune_dpr/task1_train_labels_2024.json
+label_file_val: /data/tfink/coliee/2024/data/task1_finetune_dpr/task1_val_labels_2024.json
+label_file_test: /data/tfink/coliee/2024/data/task1_test_no_labels_2024.json

@@ -26,6 +26,21 @@ If you use our models or code, please cite our work:
 }
 ```
 
+
+# Installation
+Updated requirements.txt
+Python 3.10
+
+Java
+https://www.oracle.com/java/technologies/downloads/?er=221886#java21
+
+Maven
+https://maven.apache.org/download.cgi
+
+
+Add both to path
+
+
 ## Training the dense retrieval model
 
 The dense retrieval models need to be trained, either on the paragraph-level data of COLIEE Task2 or additionally on the document-level

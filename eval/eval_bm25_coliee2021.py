@@ -12,7 +12,7 @@ import seaborn as sns
 import numpy as np
 sns.set(color_codes=True, font_scale=1.2)
 from collections import Counter
-from eval.eval_bm25 import read_run_whole_doc, analyze_correlations_bet_para, ranking_eval
+#from eval.eval_bm25 import read_run_whole_doc, analyze_correlations_bet_para, ranking_eval
 from preprocessing.caselaw_stat_corpus import preprocess_label_file
 
 

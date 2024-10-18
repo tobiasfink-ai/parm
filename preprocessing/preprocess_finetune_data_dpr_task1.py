@@ -2,6 +2,8 @@ import os
 import argparse
 import json
 import random
+import hydra
+from omegaconf import DictConfig
 from math import floor
 from rank_bm25 import BM25Okapi
 from eval.eval_bm25_coliee2021 import read_label_file
@@ -250,16 +252,17 @@ def resort_batch(samples, batch_size):
     return [samples[i] for i in sorted_index]
 
 
-if __name__ == "__main__":
-    mode = ['val']
-    corpus_dir = '/mnt/c/Users/salthamm/Documents/phd/data/coliee2021/task1/corpus'
-    output_dir = '/mnt/c/Users/salthamm/Documents/phd/data/coliee2021/task1/finetune_dpr/{}'.format(mode[0])
-    pickle_dir = '/mnt/c/Users/salthamm/Documents/phd/data/coliee2021/task1/pickle_files'
-    bm25_dir = '/mnt/c/Users/salthamm/Documents/phd/data/coliee2021/task1/bm25/search/{}/separately_para_w_summ_intro'.format(mode[0])
+@hydra.main(version_base=None, config_path="../config", config_name=None)
+def main(cfg: DictConfig):
+    mode = cfg.mode
+    corpus_dir = cfg.corpus_dir
+    output_dir = os.path.join(cfg.output_dir, mode)
+    pickle_dir = cfg.pickle_dir
+    #bm25_dir = '/mnt/c/Users/salthamm/Documents/phd/data/coliee2021/task1/bm25/search/{}/separately_para_w_summ_intro'.format(mode)
 
-    label_file_train = '/mnt/c/Users/salthamm/Documents/phd/data/coliee2021/task1/train/train_wo_val_labels.json'
-    label_file_val = '/mnt/c/Users/salthamm/Documents/phd/data/coliee2021/task1/val/val_labels.json'
-    label_file_test = '/mnt/c/Users/salthamm/Documents/phd/data/coliee2021/task1/test/test_no_labels.json'
+    label_file_train = cfg.label_file_train
+    label_file_val = cfg.label_file_val
+    label_file_test = cfg.label_file_test
 
     # first read in all files in corpus, non-informative parts are removed
     dict_paragraphs, failed_files = read_in_docs(corpus_dir, output_dir, pickle_dir, removal=True)
@@ -269,11 +272,11 @@ if __name__ == "__main__":
     # then read in the labels, because these are the questions and the answers, the hard negatives are sampled randomly?
     # or from the bm25 candidates? i think i should take one sample from bm25
 
-    if mode[0] == 'train':
+    if mode == 'train':
         qrels = read_label_file(label_file_train)
-    elif mode[0] == 'val':
+    elif mode == 'val':
         qrels = read_label_file(label_file_val)
-    elif mode[0] == 'test':
+    elif mode == 'test':
         with open(label_file_test, 'rb') as f:
             qrels = json.load(f)
             qrels = [x.split('.txt')[0] for x in qrels]
@@ -284,7 +287,7 @@ if __name__ == "__main__":
     samples = read_in_samples_task1_random_neg(dict_paragraphs, qrels)
     #samples = read_in_samples_task1_randneg_bm25pos(dict_paragraphs, qrels, cut_value)
 
-    if mode[0] == 'train':
+    if mode == 'train':
         # print first 45 sample query ids:
         query_ids = []
         for i in range(0, 50):
@@ -301,6 +304,11 @@ if __name__ == "__main__":
         print(query_ids)
 
     write_to_json(samples, output_dir)
+
+
+if __name__ == "__main__":
+    main()
+    
 
 
 

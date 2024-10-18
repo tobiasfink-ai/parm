@@ -7,6 +7,8 @@ import seaborn as sns
 import json
 import re
 import pickle
+import hydra
+from omegaconf import DictConfig
 from preprocessing.stat_corpus import lines_to_paragraphs, count_doc, only_string_in_dict, analyze_corpus_in_numbers, analyze_text_passages
 from preprocessing.jsonlines_for_bm25_pyserini import jsonl_index_whole_doc, jsonl_index_doc_only_para, jsonl_index_para_separately
 
@@ -48,14 +50,14 @@ def read_in_para_lengths(corpus_dir: str, output_dir: str):
             # file = '000028.txt'
             with open(os.path.join(corpus_dir, file), 'r') as f:
                 lines = f.readlines()
-                lines = [line.strip() for line in lines if line.strip('\n') is not ' ' and line.strip() is not '']
+                lines = [line.strip() for line in lines if line.strip('\n') != ' ' and line.strip() != '']
                 # remove fragment supressed and \xa0
                 lines = [line.replace('<FRAGMENT_SUPPRESSED>', '').strip() for line in lines if
-                         line.replace('<FRAGMENT_SUPPRESSED>', '').strip() is not '']
+                         line.replace('<FRAGMENT_SUPPRESSED>', '').strip() != '']
                 lines = [line.replace('\xa0', '').strip() for line in lines if
-                         line.replace('\xa0', '').strip() is not '']
+                         line.replace('\xa0', '').strip() != '']
                 # remove lines with only punctuation
-                lines = [line for line in lines if re.sub(r'[^\w\s]', '', line) is not '']
+                lines = [line for line in lines if re.sub(r'[^\w\s]', '', line) != '']
                 paragraphs = lines_to_paragraphs(lines)
                 if paragraphs:
                     paragraphs = only_english(paragraphs)
@@ -113,15 +115,15 @@ def read_in_docs(corpus_dir: str, output_dir: str, pickle_dir: str, removal=True
         #file = '001_001.txt'
             with open(os.path.join(corpus_dir, file), 'r') as f:
                 lines = f.readlines()
-                lines = [line.strip() for line in lines if line.strip('\n') is not ' ' and line.strip() is not '']
+                lines = [line.strip() for line in lines if line.strip('\n') != ' ' and line.strip() != '']
                 # remove fragment supressed and \xa0
                 lines = [line.replace('<FRAGMENT_SUPPRESSED>', '').strip() for line in lines if
-                         line.replace('<FRAGMENT_SUPPRESSED>', '').strip() is not '']
+                         line.replace('<FRAGMENT_SUPPRESSED>', '').strip() != '']
                 lines = [line.replace('\xa0', '').strip() for line in lines if
-                         line.replace('\xa0', '').strip() is not '']
+                         line.replace('\xa0', '').strip() != '']
                 lines = [' '.join(line.split()) for line in lines]
                 # remove lines with only punctuation
-                lines = [line for line in lines if re.sub(r'[^\w\s]', '', line) is not '']
+                lines = [line for line in lines if re.sub(r'[^\w\s]', '', line) != '']
                 paragraphs = lines_to_paragraphs(lines)
                 if paragraphs:
                     paragraphs = only_english(paragraphs)
@@ -164,36 +166,50 @@ def split_train_in_train_and_val(label_file: str, label_file_train: str, label_f
         json.dump(label_val, f)
 
 
-if __name__ == "__main__":
-    #
-    # config
-    #
-    #parser = argparse.ArgumentParser()
+@hydra.main(version_base=None, config_path="../config", config_name=None)
+def main(cfg: DictConfig):
+    mode = cfg.mode
+    corpus_dir = cfg.corpus_dir
+    output_dir = os.path.join(cfg.output_dir, mode)
+    pickle_dir = cfg.pickle_dir
+    
+    label_file_train_original = cfg.label_file_train_original
+    label_file_train = cfg.label_file_train
+    label_file_val = cfg.label_file_val
+    label_file_test = cfg.label_file_test
+    
+    label_train_val_split = cfg.label_train_val_split
 
-    #parser.add_argument('--corpus-dir', action='store', dest='corpus_dir',
-    #                    help='corpus directory location', required=True)
-    # parser.add_argument('--output-dir', action='store', dest='output_dir',
-    #                    help='output directory location', required=True)
-    # parser.add_argument('--label-file-train', action='store', dest='label_file',
-    #                    help='label file train', required=True)
-    # parser.add_argument('--label-file-test', action='store', dest='label_file_test',
-    #                    help='label file test', required=True)
-
-    #args = parser.parse_args()
-
-    corpus_dir = '/mnt/c/Users/salthamm/Documents/phd/data/coliee2021/task1/corpus'
-    output_dir = '/mnt/c/Users/salthamm/Documents/phd/data/coliee2021/task1/val'
-    pickle_dir = '/mnt/c/Users/salthamm/Documents/phd/data/coliee2021/task1/pickle_files'
-    label_file = '/mnt/c/Users/salthamm/Documents/phd/data/coliee2021/task1/train/train_labels.json'
-    label_file_train = '/mnt/c/Users/salthamm/Documents/phd/data/coliee2021/task1/train/train_wo_val_labels.json'
-    label_file_val = '/mnt/c/Users/salthamm/Documents/phd/data/coliee2021/task1/val/val_labels.json'
-    label_file_test = '/mnt/c/Users/salthamm/Documents/phd/data/coliee2021/task1/test/test_no_labels.json'
+    #output_dir = '/mnt/c/Users/salthamm/Documents/phd/data/coliee2021/task1/val'
+    #label_file = '/mnt/c/Users/salthamm/Documents/phd/data/coliee2021/task1/train/train_labels.json'
+    label_file = label_file_train_original
 
     lengths, dict_paragraphs, failed_files = read_in_para_lengths(corpus_dir, output_dir)
-    label_train = preprocess_label_file(label_file)
+    label_dict = preprocess_label_file(label_file)
+    label_keys_list = list(label_dict.keys())
+    total_labels = len(label_keys_list)
+    labels_train = {}
+    labels_val = {}
+    for idx, label in enumerate(label_keys_list):
+        if idx < (total_labels-label_train_val_split):
+            labels_train[label] = label_dict[label]
+        else:
+            labels_val[label] = label_dict[label]
+    
+    with open(label_file_train, "w") as fp:
+        json.dump(labels_train, fp, indent=4)
+    with open(label_file_val, "w") as fp:
+        json.dump(labels_val, fp, indent=4)
 
-    analyze_corpus_in_numbers(lengths, dict_paragraphs, label_train, output_dir)
+    analyze_corpus_in_numbers(lengths, dict_paragraphs, label_dict, output_dir)
     intro_often, summ_often, para_often = analyze_text_passages(dict_paragraphs, 50)
+    # these text fragments will be removed from the files as they are not considered informative!
+    with open(os.path.join(pickle_dir, 'intro_text_often.pkl'), 'wb') as f:
+       pickle.dump(intro_often, f)
+    with open(os.path.join(pickle_dir, 'summ_text_often.pkl'), 'wb') as f:
+       pickle.dump(summ_often, f)
+    with open(os.path.join(pickle_dir, 'para_text_often.pkl'), 'wb') as f:
+       pickle.dump(para_often, f)
 
     # in read in docs the non-informative intro from intro_often, and summaries from summary_often are removed
     dict_paragraphs, failed_files = read_in_docs(corpus_dir, output_dir, pickle_dir, removal=True)
@@ -204,6 +220,9 @@ if __name__ == "__main__":
                                 intro_summ=False)  # without summary and intro
     jsonl_index_para_separately(output_dir, dict_paragraphs,
                                 intro_summ=True)  # with summary and intro as separate paragraph
+
+if __name__ == "__main__":
+    main()
 
 
 

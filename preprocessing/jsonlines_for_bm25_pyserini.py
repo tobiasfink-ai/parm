@@ -27,7 +27,7 @@ def read_in_docs(corpus_dir: str, output_dir: str, pickle_dir: str, removal=True
         #file = '001_001.txt'
             with open(os.path.join(corpus_dir, file), 'r') as f:
                 lines = f.readlines()
-                lines = [line.strip() for line in lines if line.strip('\n') is not ' ' and line.strip() is not '']
+                lines = [line.strip() for line in lines if line.strip('\n') != ' ' and line.strip() != '']
                 paragraphs = lines_to_paragraphs(lines)
                 if paragraphs:
                     paragraphs = only_english(paragraphs)

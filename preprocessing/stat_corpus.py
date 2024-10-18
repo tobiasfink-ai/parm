@@ -200,7 +200,7 @@ def read_in_para_lengths(corpus_dir: str, output_dir: str):
             # file = '001_001.txt'
             with open(os.path.join(corpus_dir, file), 'r') as f:
                 lines = f.readlines()
-                lines = [line.strip() for line in lines if line.strip('\n') is not ' ' and line.strip() is not '']
+                lines = [line.strip() for line in lines if line.strip('\n') != ' ' and line.strip() != '']
                 paragraphs = lines_to_paragraphs(lines)
                 if paragraphs:
                     paragraphs = only_english(paragraphs)
@@ -284,6 +284,7 @@ def read_folder(folder_dir: str):
 
 def analyze_text_passages(dict_paragraphs: dict, threshold=100):
     # first if some intros are the same
+    print(f"Removal Threshold is {threshold}")
     flipped = {}
     for key, value in dict_paragraphs.items():
         if value.get('intro'):
