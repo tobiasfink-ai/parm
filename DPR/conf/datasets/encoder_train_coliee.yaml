@@ -1,0 +1,63 @@
+# @package _group_
+
+nq_train:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: data.retriever.nq-train
+
+nq_train_hn1:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: data.retriever.nq-adv-hn-train
+
+nq_dev:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: data.retriever.nq-dev
+
+trivia_train:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: data.retriever.trivia-train
+
+trivia_dev:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: data.retriever.trivia-dev
+
+squad1_train:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: data.retriever.squad1-train
+
+squad1_dev:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: data.retriever.squad1-dev
+
+webq_train:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: data.retriever.webq-train
+
+webq_dev:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: data.retriever.webq-dev
+
+curatedtrec_train:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: data.retriever.curatedtrec-train
+
+curatedtrec_dev:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: data.retriever.curatedtrec-dev
+
+
+# COLIEE
+coliee2024_t1_train:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /data/tfink/coliee/2024/data/task1_finetune_dpr/train/samples.json
+
+coliee2024_t1_dev:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /data/tfink/coliee/2024/data/task1_finetune_dpr/val/samples.json
+
+coliee2024_t2_train:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /data/tfink/coliee/2024/data/task2_finetune_dpr/train/samples.json
+
+coliee2024_t2_dev:
+  _target_: dpr.data.biencoder_data.JsonQADataset
+  file: /data/tfink/coliee/2024/data/task2_finetune_dpr/val/samples.json

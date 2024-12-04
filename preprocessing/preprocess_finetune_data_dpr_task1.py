@@ -8,7 +8,7 @@ from math import floor
 from rank_bm25 import BM25Okapi
 from eval.eval_bm25_coliee2021 import read_label_file
 from preprocessing.preprocessing_coliee_2021_task1 import read_in_docs
-from preprocessing.preprocess_finetune_data_dpr import write_to_json
+from preprocessing.preprocess_finetune_data_dpr_task2 import write_to_json
 random.seed(43)
 
 
@@ -254,15 +254,15 @@ def resort_batch(samples, batch_size):
 
 @hydra.main(version_base=None, config_path="../config", config_name=None)
 def main(cfg: DictConfig):
-    mode = cfg.mode
-    corpus_dir = cfg.corpus_dir
-    output_dir = os.path.join(cfg.output_dir, mode)
-    pickle_dir = cfg.pickle_dir
+    mode = cfg.task1.mode
+    corpus_dir = cfg.task1.corpus_dir
+    output_dir = os.path.join(cfg.task1.output_dir, mode)
+    pickle_dir = cfg.task1.pickle_dir
     #bm25_dir = '/mnt/c/Users/salthamm/Documents/phd/data/coliee2021/task1/bm25/search/{}/separately_para_w_summ_intro'.format(mode)
 
-    label_file_train = cfg.label_file_train
-    label_file_val = cfg.label_file_val
-    label_file_test = cfg.label_file_test
+    label_file_train = cfg.task1.label_file_train
+    label_file_val = cfg.task1.label_file_val
+    label_file_test = cfg.task1.label_file_test
 
     # first read in all files in corpus, non-informative parts are removed
     dict_paragraphs, failed_files = read_in_docs(corpus_dir, output_dir, pickle_dir, removal=True)

@@ -168,17 +168,17 @@ def split_train_in_train_and_val(label_file: str, label_file_train: str, label_f
 
 @hydra.main(version_base=None, config_path="../config", config_name=None)
 def main(cfg: DictConfig):
-    mode = cfg.mode
-    corpus_dir = cfg.corpus_dir
-    output_dir = os.path.join(cfg.output_dir, mode)
-    pickle_dir = cfg.pickle_dir
+    mode = cfg.task1.mode
+    corpus_dir = cfg.task1.corpus_dir
+    output_dir = os.path.join(cfg.task1.output_dir, mode)
+    pickle_dir = cfg.task1.pickle_dir
     
-    label_file_train_original = cfg.label_file_train_original
-    label_file_train = cfg.label_file_train
-    label_file_val = cfg.label_file_val
-    label_file_test = cfg.label_file_test
+    label_file_train_original = cfg.task1.label_file_train_original
+    label_file_train = cfg.task1.label_file_train
+    label_file_val = cfg.task1.label_file_val
+    label_file_test = cfg.task1.label_file_test
     
-    label_train_val_split = cfg.label_train_val_split
+    label_train_val_split = cfg.task1.label_train_val_split
 
     #output_dir = '/mnt/c/Users/salthamm/Documents/phd/data/coliee2021/task1/val'
     #label_file = '/mnt/c/Users/salthamm/Documents/phd/data/coliee2021/task1/train/train_labels.json'
