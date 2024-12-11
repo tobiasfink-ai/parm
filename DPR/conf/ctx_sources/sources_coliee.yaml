@@ -1,0 +1,5 @@
+# @package _group_
+
+dpr_coliee:
+  _target_: dpr.data.retriever_data.CsvCtxSrc
+  file: /data/tfink/coliee/2024/data/task1_finetune_dpr/val/ctx_corpus.tsv

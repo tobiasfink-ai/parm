@@ -12,6 +12,10 @@ from omegaconf import DictConfig
 from preprocessing.stat_corpus import lines_to_paragraphs, count_doc, only_string_in_dict, analyze_corpus_in_numbers, analyze_text_passages
 from preprocessing.jsonlines_for_bm25_pyserini import jsonl_index_whole_doc, jsonl_index_doc_only_para, jsonl_index_para_separately
 
+from pathlib import Path
+import csv
+from tqdm import tqdm
+
 
 def only_english(paragraphs: dict):
     # check intro where the english version is, is it the first one or the second one of the paragraphs?
@@ -45,32 +49,32 @@ def read_in_para_lengths(corpus_dir: str, output_dir: str):
     lengths = {}
     dict_paragraphs = {}
     failed_files = []
-    for root, dirs, files in os.walk(corpus_dir):
-        for file in files:
-            # file = '000028.txt'
-            with open(os.path.join(corpus_dir, file), 'r') as f:
-                lines = f.readlines()
-                lines = [line.strip() for line in lines if line.strip('\n') != ' ' and line.strip() != '']
-                # remove fragment supressed and \xa0
-                lines = [line.replace('<FRAGMENT_SUPPRESSED>', '').strip() for line in lines if
-                         line.replace('<FRAGMENT_SUPPRESSED>', '').strip() != '']
-                lines = [line.replace('\xa0', '').strip() for line in lines if
-                         line.replace('\xa0', '').strip() != '']
-                # remove lines with only punctuation
-                lines = [line for line in lines if re.sub(r'[^\w\s]', '', line) != '']
-                paragraphs = lines_to_paragraphs(lines)
-                if paragraphs:
-                    paragraphs = only_english(paragraphs)
-                    paragraphs = only_string_in_dict(paragraphs)
-                    # now analyze the intro, the summary and the length of the paragraphs
-                    no_intro, no_summ, lengths_para = count_doc(paragraphs)
-                    lengths.update({file.split('.')[0]: {'intro': no_intro, 'summary': no_summ,
-                                                         'lengths_paragraphs': lengths_para}})
-                    dict_paragraphs.update({file.split('.')[0]: paragraphs})
-                    # print('lengths for file {} done'.format(file))
-                else:
-                    print('reading in of file {} doesnt work'.format(file))
-                    failed_files.append(file)
+    files = os.listdir(corpus_dir)
+    for file in tqdm(files, desc="Para lengths"):
+        # file = '000028.txt'
+        with open(os.path.join(corpus_dir, file), 'r') as f:
+            lines = f.readlines()
+            lines = [line.strip() for line in lines if line.strip('\n') != ' ' and line.strip() != '']
+            # remove fragment supressed and \xa0
+            lines = [line.replace('<FRAGMENT_SUPPRESSED>', '').strip() for line in lines if
+                        line.replace('<FRAGMENT_SUPPRESSED>', '').strip() != '']
+            lines = [line.replace('\xa0', '').strip() for line in lines if
+                        line.replace('\xa0', '').strip() != '']
+            # remove lines with only punctuation
+            lines = [line for line in lines if re.sub(r'[^\w\s]', '', line) != '']
+            paragraphs = lines_to_paragraphs(lines)
+            if paragraphs:
+                paragraphs = only_english(paragraphs)
+                paragraphs = only_string_in_dict(paragraphs)
+                # now analyze the intro, the summary and the length of the paragraphs
+                no_intro, no_summ, lengths_para = count_doc(paragraphs)
+                lengths.update({file.split('.')[0]: {'intro': no_intro, 'summary': no_summ,
+                                                        'lengths_paragraphs': lengths_para}})
+                dict_paragraphs.update({file.split('.')[0]: paragraphs})
+                # print('lengths for file {} done'.format(file))
+            else:
+                print('reading in of file {} doesnt work'.format(file))
+                failed_files.append(file)
 
     with open(os.path.join(output_dir, 'corpus_lengths.pickle'), 'wb') as f:
         pickle.dump(lengths, f)
@@ -110,33 +114,32 @@ def read_in_docs(corpus_dir: str, output_dir: str, pickle_dir: str, removal=True
 
     dict_paragraphs = {}
     failed_files = []
-    for root, dirs, files in os.walk(corpus_dir):
-        for file in files:
-        #file = '001_001.txt'
-            with open(os.path.join(corpus_dir, file), 'r') as f:
-                lines = f.readlines()
-                lines = [line.strip() for line in lines if line.strip('\n') != ' ' and line.strip() != '']
-                # remove fragment supressed and \xa0
-                lines = [line.replace('<FRAGMENT_SUPPRESSED>', '').strip() for line in lines if
-                         line.replace('<FRAGMENT_SUPPRESSED>', '').strip() != '']
-                lines = [line.replace('\xa0', '').strip() for line in lines if
-                         line.replace('\xa0', '').strip() != '']
-                lines = [' '.join(line.split()) for line in lines]
-                # remove lines with only punctuation
-                lines = [line for line in lines if re.sub(r'[^\w\s]', '', line) != '']
-                paragraphs = lines_to_paragraphs(lines)
-                if paragraphs:
-                    paragraphs = only_english(paragraphs)
-                    paragraphs = only_string_in_dict(paragraphs)
-                    if removal:
-                        if paragraphs.get('intro') in intro_often:
-                            paragraphs.update({'intro': None})
-                        if paragraphs.get('Summary:') in summ_often:
-                            paragraphs.update({'Summary:': None})
-                    dict_paragraphs.update({file.split('.')[0]: paragraphs})
-                else:
-                    print('reading in of file {} doesnt work'.format(file))
-                    failed_files.append(file)
+    files = os.listdir(corpus_dir)
+    for file in tqdm(files, desc="Corpus Docs"):
+        with open(os.path.join(corpus_dir, file), 'r') as f:
+            lines = f.readlines()
+            lines = [line.strip() for line in lines if line.strip('\n') != ' ' and line.strip() != '']
+            # remove fragment supressed and \xa0
+            lines = [line.replace('<FRAGMENT_SUPPRESSED>', '').strip() for line in lines if
+                        line.replace('<FRAGMENT_SUPPRESSED>', '').strip() != '']
+            lines = [line.replace('\xa0', '').strip() for line in lines if
+                        line.replace('\xa0', '').strip() != '']
+            lines = [' '.join(line.split()) for line in lines]
+            # remove lines with only punctuation
+            lines = [line for line in lines if re.sub(r'[^\w\s]', '', line) != '']
+            paragraphs = lines_to_paragraphs(lines)
+            if paragraphs:
+                paragraphs = only_english(paragraphs)
+                paragraphs = only_string_in_dict(paragraphs)
+                if removal:
+                    if paragraphs.get('intro') in intro_often:
+                        paragraphs.update({'intro': None})
+                    if paragraphs.get('Summary:') in summ_often:
+                        paragraphs.update({'Summary:': None})
+                dict_paragraphs.update({file.split('.')[0]: paragraphs})
+            else:
+                print('reading in of file {} doesnt work'.format(file))
+                failed_files.append(file)
 
     #with open(os.path.join(output_dir, 'paragraphs_jsonlines.pickle'), 'wb') as f:
     #    pickle.dump(dict_paragraphs, f)
@@ -164,6 +167,31 @@ def split_train_in_train_and_val(label_file: str, label_file_train: str, label_f
         json.dump(label_train_wo_val, f)
     with open(label_file_val, 'w') as f:
         json.dump(label_val, f)
+
+
+
+def create_ctx_corpus(output_dir, fname, dict_paragraphs, intro_summ=False):
+    '''
+    creates tsv file with one sample containing one passage, if intro_summ = False then it only considers
+    the paragraphs, if True then it also includes the intros and summaries as samples
+    :param output_dir:
+    :param dict_paragraphs:
+    :param intro_summ:
+    :return:
+    '''
+    with open(os.path.join(output_dir, fname), mode='w') as tsv_file:
+        writer = csv.writer(tsv_file, delimiter='\t')
+        writer.writerow(['id', 'contents'])
+        for case_f, paragraphs in dict_paragraphs.items():
+            p_id = 0
+            case_id = Path(case_f).stem
+            for key2, p in paragraphs.items():
+                if not intro_summ:
+                    if key2 == 'intro' or key2 == 'Summary:':
+                        continue
+                if p:
+                    writer.writerow((f'{case_id}_{p_id}', p, ''))
+                    p_id += 1
 
 
 @hydra.main(version_base=None, config_path="../config", config_name=None)
@@ -213,6 +241,9 @@ def main(cfg: DictConfig):
 
     # in read in docs the non-informative intro from intro_often, and summaries from summary_often are removed
     dict_paragraphs, failed_files = read_in_docs(corpus_dir, output_dir, pickle_dir, removal=True)
+
+    create_ctx_corpus(output_dir, "ctx_corpus.tsv", dict_paragraphs,
+                                intro_summ=False)
 
     jsonl_index_whole_doc(output_dir, dict_paragraphs)
     jsonl_index_doc_only_para(output_dir, dict_paragraphs)

@@ -1,18 +1,18 @@
 defaults:
   - encoder: hf_bert
-  - ctx_sources: default_sources
+  - ctx_sources: sources_coliee
 
 # A trained bi-encoder checkpoint file to initialize the model
-model_file:
+model_file: /data/tfink/coliee/2024/data/task2_finetune_dpr/dpr_out/dpr_biencoder.65
 
 # Name of the all-passages resource
-ctx_src:
+ctx_src: dpr_coliee
 
 # which (ctx or query) encoder to be used for embedding generation
 encoder_type: ctx
 
 # output .tsv file path to write results to
-out_file:
+out_file: /data/tfink/coliee/2024/data/task1_finetune_dpr/coliee_t2_gen_emb
 
 # Whether to lower case the input text. Set True for uncased models, False for the cased ones.
 do_lower_case: True
